@@ -4,9 +4,9 @@ import pytest
 from metadspy.specs.embedder import EmbedderSpec
 import litellm
 
-def fake_embedder(model, inputs, **kwargs):
+def fake_embedder(model, input, **kwargs):
     # Return a deterministic fake array with the expected shape
-    return np.ones((len(inputs), 3))
+    return np.ones((len(input), 3))
 
 def test_openai_embedder(monkeypatch):
     spec = EmbedderSpec(
