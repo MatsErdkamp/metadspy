@@ -2,8 +2,9 @@ import os
 import numpy as np
 import pytest
 from metadspy.specs.embedder import EmbedderSpec
+import litellm
 
-def fake_embedder(inputs, **kwargs):
+def fake_embedder(model, inputs, **kwargs):
     # Return a deterministic fake array with the expected shape
     return np.ones((len(inputs), 3))
 
@@ -16,9 +17,9 @@ def test_openai_embedder(monkeypatch):
     )
     embedder = spec.build()
 
-    # If no API key is set, monkeypatch the __call__ method
     if os.getenv("OPENAI_API_KEY") is None:
-        monkeypatch.setattr(embedder, "__call__", fake_embedder)
+        # Patch litellm.embedding *everywhere* (not just this embedder)
+        monkeypatch.setattr(litellm, "embedding", fake_embedder)
     
     res = embedder(["Paris", "San Francisco"])
     assert hasattr(res, "shape") or isinstance(res, np.ndarray)
