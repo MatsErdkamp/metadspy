@@ -68,7 +68,27 @@ class ReActSpec(_BaseModule):
         return dspy.ReAct(sig, **kwargs)
 
 
+class CodeActSpec(_BaseModule):
+    type: Literal["CodeAct"] = "CodeAct"
+    tools: List[str]
+    max_iters: int = 5
+    interpreter: Optional[str] = None
+
+    def build(self, sig: type[dspy.Signature]) -> dspy.Module:
+        tool_objs = [_load(t) for t in self.tools]
+        kwargs: dict[str, Any] = {
+            "tools": tool_objs,
+            "max_iters": self.max_iters,
+        }
+
+        if self.interpreter:
+            kwargs["interpreter"] = _load(self.interpreter)
+        if self.callbacks:
+            kwargs["callbacks"] = self._cbs()
+        return dspy.CodeAct(sig, **kwargs)
+
+
 ModuleSpec = Annotated[
-    Union[PredictSpec, ReActSpec],
+    Union[PredictSpec, ReActSpec, CodeActSpec],
     Field(discriminator="type")
 ]
