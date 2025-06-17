@@ -88,7 +88,25 @@ class CodeActSpec(_BaseModule):
         return dspy.CodeAct(sig, **kwargs)
 
 
+class ChainOfThoughtSpec(_BaseModule):
+    type: Literal["ChainOfThought"] = "ChainOfThought"
+    rationale_field: Optional[str] = None
+    rationale_field_type: str = "str"
+    config: dict = Field(default_factory=dict)
+
+    def build(self, sig: type[dspy.Signature]) -> dspy.Module:
+        kwargs = dict(self.config)
+        if self.rationale_field is not None:
+            kwargs["rationale_field"] = self.rationale_field
+
+        if self.rationale_field_type and self.rationale_field_type != "str":
+            kwargs["rationale_field_type"] = eval(self.rationale_field_type)
+    
+        return dspy.ChainOfThought(sig, **kwargs)
+
+
+
 ModuleSpec = Annotated[
-    Union[PredictSpec, ReActSpec, CodeActSpec],
+    Union[PredictSpec, ReActSpec, CodeActSpec, ChainOfThoughtSpec],
     Field(discriminator="type")
 ]
